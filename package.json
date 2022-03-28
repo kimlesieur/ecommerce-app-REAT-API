@@ -4,7 +4,11 @@
   "description": "This project is an API with a REST architecture.\r It's build as a first block for a future project (PERN app).",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js"
+  },
+  "nodemonConfig": {
+    "delay": 2
   },
   "repository": {
     "type": "git",
@@ -15,5 +19,12 @@
   "bugs": {
     "url": "https://github.com/kimlesieur/ecommerce-app-REAT-API/issues"
   },
-  "homepage": "https://github.com/kimlesieur/ecommerce-app-REAT-API#readme"
+  "homepage": "https://github.com/kimlesieur/ecommerce-app-REAT-API#readme",
+  "dependencies": {
+    "express": "^4.17.3",
+    "pg": "^8.7.3"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  }
 }
