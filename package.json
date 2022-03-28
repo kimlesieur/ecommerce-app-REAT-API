@@ -1,0 +1,19 @@
+{
+  "name": "e-commerce-app",
+  "version": "1.0.0",
+  "description": "This project is an API with a REST architecture.\r It's build as a first block for a future project (PERN app).",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kimlesieur/ecommerce-app-REAT-API.git"
+  },
+  "author": "kim",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kimlesieur/ecommerce-app-REAT-API/issues"
+  },
+  "homepage": "https://github.com/kimlesieur/ecommerce-app-REAT-API#readme"
+}
