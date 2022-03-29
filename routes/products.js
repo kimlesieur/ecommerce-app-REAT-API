@@ -1,13 +1,17 @@
 const express = require('express');
+const { getProducts, getProductById } = require('../models/productsModel');
 const productsRouter = express.Router();
 
-productsRouter.get('/', (req, res, next) => {
-    res.send(`The products are... as of ${req.date}`);
+productsRouter.get('/', async (req, res, next) => {
+    const products = await getProducts();
+    console.log(products);
+    res.status(200).send(products);
 });
 
-productsRouter.get('/:id', (req, res,next) => {
+productsRouter.get('/:id', async (req, res,next) => {
     const id = req.params.id ;
-    res.send(`The products is the number ${id}`);
+    const product = await getProductById(id);
+    res.status(200).send(product);
 });
 
 

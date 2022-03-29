@@ -1,7 +1,8 @@
 const express = require('express');
 const productsRouter = require('./routes/products');
 const app = express();
-const PORT = 4001;
+const {PORT} = require('./config');
+const {DB} = require('./config');
 
 app.listen(PORT, () => {
     console.log(`Server is listening on port ${PORT}`);
