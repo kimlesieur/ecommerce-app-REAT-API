@@ -1,8 +1,8 @@
 const express = require('express');
-const productsRouter = require('./routes/products');
 const app = express();
 const {PORT} = require('./config');
-const {DB} = require('./config');
+const productsRouter = require('./routes/products');
+const accountRouter = require('./routes/account');
 
 app.listen(PORT, () => {
     console.log(`Server is listening on port ${PORT}`);
@@ -17,6 +17,7 @@ app.use(timeMiddleware);
 */
 
 app.use('/products', productsRouter);
+app.use('/account', accountRouter);
 
 
 
