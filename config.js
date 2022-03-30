@@ -7,4 +7,6 @@
           DB_PASSWORD: process.env.PGPASSWORD,
           DB_PORT: process.env.PGPORT
         },
+        SESS_NAME: process.env.SESS_NAME,
+        
       }

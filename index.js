@@ -3,7 +3,7 @@ const express = require('express');
 const app = express();
 const session = require("express-session");
 
-const {PORT} = require('./config');
+const {PORT, SESS_NAME} = require('./config');
 const productsRouter = require('./routes/products');
 const accountRouter = require('./routes/account');
 
@@ -36,7 +36,7 @@ app.use(bodyParser.urlencoded({
 
 app.use(
   session({
-    name: 'kim-cookie',
+    name: SESS_NAME,
     secret: "f4z4gs$Gcg",
     cookie: { maxAge: 300000000, secure: false },
     saveUninitialized: false,
@@ -110,7 +110,7 @@ app.post('/logout', (req, res, next) => {
     if(err){
       return res.redirect('/home')
     }
-    res.clearCookie('kim-cookie');
+    res.clearCookie(SESS_NAME);
     res.redirect('/login');
   })
 });
