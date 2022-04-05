@@ -142,12 +142,6 @@ app.use('/orders', ensureAuthentication, orderRouter);
 
 
 
-
-
-
-
-
-
-app.listen(PORT, () => {
+app.listen(process.env.PORT || 3002, () => {
   console.log(`Server is listening on port ${PORT}`);
 });
