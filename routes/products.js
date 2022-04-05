@@ -1,11 +1,10 @@
 const express = require('express');
-const { getProducts, getProductById } = require('../models/productsModel');
 const productsRouter = express.Router();
+const { getProducts, getProductById } = require('../models/productsModel');
 
 productsRouter.get('/', async (req, res, next) => {
     if (req.query.category) {
         const products = await getProducts(req.query.category);
-        console.log(products);
         return res.status(200).send(products);
     }
     const products = await getProducts();

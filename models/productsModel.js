@@ -15,11 +15,18 @@ const getProducts = async (id = '') => {
 };
 
 const getProductById = async (id) => {
-    console.log(`voilà ton id : ${id}`);
     return pool
         .query(`SELECT * FROM products WHERE id = $1`, [id])
         .then(res => res.rows[0])
         .catch(err => console.error('Error while executing a getProductById query', err.stack))
 };
 
-module.exports = {getProducts, getProductById};
+const getProductPrice = async (id) => {
+    return pool
+    .query(`SELECT price FROM products WHERE id = $1`, [id])
+    .then(res => res.rows[0])
+    .catch(err => console.error('Error while executing a getProductPrice query', err.stack))
+};
+
+
+module.exports = {getProducts, getProductById, getProductPrice};
