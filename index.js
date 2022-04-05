@@ -2,7 +2,7 @@ const bodyParser = require('body-parser');
 const express = require('express');
 const app = express();
 const session = require("express-session");
-const morgan = require('morgan');
+//const morgan = require('morgan');
 
 const {PORT, SESS_NAME, SESS_SECRET} = require('./config');
 const productsRouter = require('./routes/products');
@@ -20,7 +20,7 @@ const timeMiddleware = (req, res, next) => {
 app.use(timeMiddleware);
 */
 
-app.use(morgan(':method :url :status :res[content-length]kB - :response-time ms'));
+//app.use(morgan(':method :url :status :res[content-length]kB - :response-time ms'));
 
 
 app.use(bodyParser.urlencoded({
