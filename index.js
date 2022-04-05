@@ -107,7 +107,7 @@ app.post('/login', async (req, res, next) => {
       return res.redirect('/account')
     }
   }
-  res.redirect('/login');
+  res.redirect('/login?error=wrong-password');
 });
 
 //TODO = When user register, retrieve the user id and add to session for automatic login

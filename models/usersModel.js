@@ -22,3 +22,5 @@ const createUser = async (firstname, lastname, email, password) => {
 };
 
 module.exports = {getUser, createUser, checkUserMail};
+
+INSERT INTO users (firstname, lastname, email, password, created) VALUES ('mike','john', 'mike@gmail.com', 'password', NOW())
