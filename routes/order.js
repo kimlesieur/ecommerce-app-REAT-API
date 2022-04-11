@@ -8,7 +8,7 @@ const {getProductPrice} = require('../models/productsModel');
 
 
 const ensureCartExist = async (req, res, next) => {
-    const {user} = req.session;
+    const user = req.user;
     const cartCheck = await getCart(user.id);
     if(!cartCheck){
         await createCart(user.id);
@@ -18,7 +18,7 @@ const ensureCartExist = async (req, res, next) => {
 };
 
 const ensureCartNotEmpty = async (req, res, next) => {
-    const {user} = req.session;
+    const user = req.user;
     const cart = await getCart(user.id);
     const products = await getProductsFromCart(cart.id);
     if(products.length === 0){
@@ -29,7 +29,7 @@ const ensureCartNotEmpty = async (req, res, next) => {
 };
 
 orderRouter.get('/:orderId?', async (req, res, next) => {
-    const {user} = req.session;
+    const user = req.user;
     const orderId = parseInt(req.params.orderId);
     const orders = await getOrders(user.id);
     if(orderId){
@@ -43,7 +43,7 @@ orderRouter.get('/:orderId?', async (req, res, next) => {
 orderRouter.post('/', ensureCartExist, ensureCartNotEmpty, async (req, res, next) => {
 
     //Create an order + get the order id
-    const {user} = req.session;
+    const user = req.user;
     const order = await createOrder(user.id);
     //Get the current cart and all the products fom it
     const cart = await getCart(user.id);

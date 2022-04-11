@@ -7,6 +7,14 @@ const getUser = async (email, password) => {
         .catch(err => console.error('Error while executing a getUser query', err.stack))
 };
 
+const getUserById = async (id) => {
+    return pool
+        .query(`SELECT * FROM users WHERE id = $1`, [id])
+        .then(res => res.rows[0])
+        .catch(err => console.error('Error while executing a getUser query', err.stack))
+};
+
+
 const checkUserMail = async (email) => {
     return pool
         .query(`SELECT * FROM users WHERE email = $1`, [email])
@@ -21,4 +29,4 @@ const createUser = async (firstname, lastname, email, password) => {
             .catch(err => console.error('Error while executing a createUser query', err.stack))
 };
 
-module.exports = {getUser, createUser, checkUserMail};
+module.exports = {getUser, createUser, checkUserMail, getUserById};

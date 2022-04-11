@@ -4,7 +4,7 @@ const {getCart, createCart} = require('../models/cartsModel');
 const {addProductInCart, checkProductInCart, updateQuantity, deleteProduct} = require('../models/cartItemsModel');
 
 const ensureCartExist = async (req, res, next) => {
-    const {user} = req.session;
+    const user = req.user;
     const cartCheck = await getCart(user.id);
     if(!cartCheck){
         await createCart(user.id);
@@ -14,7 +14,7 @@ const ensureCartExist = async (req, res, next) => {
 };
 
 cartRouter.get('/showCart', ensureCartExist, async (req, res, next) => {
-    const {user} = req.session;
+    const user = req.user;
     const cart = await getCart(user.id);
     return res.status(200).send(cart);
 });
@@ -34,7 +34,7 @@ cartRouter.get('/', ensureCartExist, async (req, res, next) => {
 
 cartRouter.post('/', ensureCartExist, async (req, res, next) => {
     const {productId, quantity} = req.body;
-    const {user} = req.session;
+    const user = req.user;
     const cart = await getCart(user.id);
     const productAlreadyInCart = await checkProductInCart(cart.id, productId);
     if(productAlreadyInCart){
@@ -49,7 +49,7 @@ cartRouter.post('/', ensureCartExist, async (req, res, next) => {
 
 cartRouter.delete('/delete/:productId', ensureCartExist, async (req, res, next) => {
     const {productId} = req.params;
-    const {user} = req.session;
+    const user = req.user;
     const cart = await getCart(user.id);
     const productAlreadyInCart = await checkProductInCart(cart.id, productId);
     if(productAlreadyInCart){
@@ -58,9 +58,6 @@ cartRouter.delete('/delete/:productId', ensureCartExist, async (req, res, next) 
     }
     return res.redirect('/cart/showCart?error=no-product-to-delete');
 });
-
-
-
 
 
 module.exports = cartRouter;

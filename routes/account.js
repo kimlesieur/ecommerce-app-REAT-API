@@ -2,7 +2,8 @@ const express = require('express');
 const accountRouter = express.Router();
 
 accountRouter.get('/', (req, res, next) => {
-    res.send(`Welcome ${req.session.user.firstname} !`)
+    const user = req.user;
+    res.send(`Welcome ${user.firstname} !`)
 });
 
 accountRouter.get('/orders', (req, res, next) => {

@@ -2,14 +2,15 @@ const bodyParser = require('body-parser');
 const express = require('express');
 const app = express();
 const session = require("express-session");
+const passport = require("passport");
 //const morgan = require('morgan');
-
-const {PORT, SESS_NAME, SESS_SECRET} = require('./config');
+const {PORT, SESS_NAME, SESS_SECRET, SALT_ROUNDS} = require('./config');
 const productsRouter = require('./routes/products');
 const accountRouter = require('./routes/account');
 const cartRouter = require('./routes/cart');
 const orderRouter = require('./routes/order');
 const {getUser, createUser, checkUserMail} = require('./models/usersModel');
+const bcrypt = require('bcrypt');
 
 /* 
 //Test to pass a date variable through the sub-Routers
@@ -37,13 +38,10 @@ app.use(
   })
 );
 
-const ensureAuthentication = (req, res, next) => {
-  if (req.session.userId) {
-    return next();
-  } else {
-    return res.redirect('/login?unauthorized=1');
-  }
-}
+require('./config/passport');
+app.use(passport.initialize());
+app.use(passport.session());
+
 
 app.get('/', (req, res, next) => {
   return res.send(
@@ -97,6 +95,7 @@ app.get('/register', (req, res, next) => {
  `)
 });
 
+/*
 app.post('/login', async (req, res, next) => {
   const {email, password} = req.body;
   if(email && password){
@@ -109,6 +108,25 @@ app.post('/login', async (req, res, next) => {
   }
   res.redirect('/login?error=wrong-password');
 });
+*/
+
+app.post('/login', 
+  passport.authenticate('local', {failureRedirect: "/login?error=wrong-password"}),
+  (req, res) => {
+    res.redirect("/");
+  }
+);
+
+const passwordHash = async (password, saltRounds) => {
+  try {
+    const salt = await bcrypt.genSalt(saltRounds);
+    const hash = await bcrypt.hash(password, salt);
+    return hash;
+  } catch (err) {
+    console.log(err);
+  }
+  return null;
+};
 
 //TODO = When user register, retrieve the user id and add to session for automatic login
 app.post('/register', async (req, res, next) => {
@@ -118,13 +136,27 @@ app.post('/register', async (req, res, next) => {
     if(isEmailTaken){
       return res.redirect('/register?error=mail-already-taken')
     }
-    await createUser(firstname, lastname, email, password)
+    const passwordHashed = await passwordHash(password, parseInt(SALT_ROUNDS));
+    await createUser(firstname, lastname, email, passwordHashed)
     return res.redirect('/')
   }
   return res.redirect('/register?error=missing-infos')
 });
 
+app.post('/logout', (req, res) => {
+  req.logout();
+  res.redirect('/');
+});
 
+const ensureAuthentication = (req, res, next) => {
+  if (req.user) {
+    return next();
+  } else {
+    return res.redirect('/login?unauthorized');
+  }
+}
+
+/*
 app.post('/logout', (req, res, next) => {
   req.session.destroy(err => {
     if(err){
@@ -134,6 +166,7 @@ app.post('/logout', (req, res, next) => {
     res.redirect('/login');
   })
 });
+*/
 
 app.use('/products', productsRouter);
 app.use('/account', ensureAuthentication, accountRouter);

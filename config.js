@@ -1,5 +1,6 @@
  module.exports = {
         PORT: process.env.PORT,
+        SALT_ROUNDS: process.env.SALT_ROUNDS,
         DB: {
           DB_HOST: process.env.PGHOST,
           DB_USER: process.env.PGUSER,
