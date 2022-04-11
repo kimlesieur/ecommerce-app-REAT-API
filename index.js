@@ -45,7 +45,7 @@ app.use(passport.session());
 
 app.get('/', (req, res, next) => {
   return res.send(
-    `<h1>Welcome!<h1>
+    `<h1>Welcome to this REST API hosted on Heroku !<h1>
     <a href='/login'>Login</a>
     <a href='/register'>Register</a>
     <a href='/'>Home</a>
