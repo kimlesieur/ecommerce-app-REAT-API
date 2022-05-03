@@ -3,7 +3,7 @@ const express = require('express');
 const app = express();
 const session = require("express-session");
 const passport = require("passport");
-const morgan = require('morgan');
+//const morgan = require('morgan');
 const {PORT, SESS_NAME, SESS_SECRET, SALT_ROUNDS, JWT_SECRET, SESSION_EXPIRY} = require('./config');
 //Routers 
 const productsRouter = require('./routes/products');
@@ -31,7 +31,7 @@ const timeMiddleware = (req, res, next) => {
 app.use(timeMiddleware);
 */
 
-app.use(morgan(':method :url :status :res[content-length]kB - :response-time ms'));
+//app.use(morgan(':method :url :status :res[content-length]kB - :response-time ms'));
 
 app.use(bodyParser.urlencoded({
   extended: true
