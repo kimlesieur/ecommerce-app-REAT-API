@@ -78,6 +78,15 @@ app.post('/login', async (req, res, next) => {
 });
 */
 
+app.get('/', (req, res, next) => {
+  return res.send(
+    `<h1>Welcome to this REST API hosted on Heroku !<h1>
+    <p>Use cURL or Postman to make requests </p>
+    <a href='/docs'>Need some docs ? Check this !</a>
+    `
+  )
+});
+
 //Login and Register routes
 
 const getToken = userId => {
