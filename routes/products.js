@@ -6,15 +6,15 @@ productsRouter.get('/', async (req, res, next) => {
     if (req.query.category) {
         const products = await getProducts(req.query.category);
         return res.status(200).send(products);
-    }
+    }    
     const products = await getProducts();
     return res.status(200).send(products);
 });
 
-productsRouter.get('/:id', async (req, res,next) => {
+productsRouter.get('/:id', async (req, res, next) => {
     const id = req.params.id ;
     const product = await getProductById(id);
-    res.status(200).send(product);
+    return res.status(200).send(product);
 });
 
 

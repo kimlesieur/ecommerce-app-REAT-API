@@ -1,6 +1,6 @@
 const express = require('express');
 const cartRouter = express.Router();
-const {getCart, createCart} = require('../models/cartsModel');
+const {getCart, createCart, getCartItems} = require('../models/cartsModel');
 const {addProductInCart, checkProductInCart, updateQuantity, deleteProduct} = require('../models/cartItemsModel');
 
 const ensureCartExist = async (req, res, next) => {
@@ -13,23 +13,13 @@ const ensureCartExist = async (req, res, next) => {
     return next();
 };
 
-cartRouter.get('/showCart', ensureCartExist, async (req, res, next) => {
+cartRouter.get('/', ensureCartExist, async (req, res, next) => {
     const user = req.user;
     const cart = await getCart(user.id);
-    return res.status(200).send(cart);
-});
-
-cartRouter.get('/', ensureCartExist, async (req, res, next) => {
-    return res.send(`
-    <h1>Choose your product and quantity</h1>
-    <form method='post' action='/cart'>
-      <input name='productId' placeholder='Product number' require/>
-      <input name='quantity' placeholder='Quantity to add' require/> 
-      <input type='submit' />
-    </form>
-    <a href='/cart/showCart'>Show your cart</a>
-  `
-  )
+    const cartId = cart.id;
+    console.log(cartId)
+    const items = await getCartItems(cartId);
+    return res.status(200).send(items);
 });
 
 cartRouter.post('/', ensureCartExist, async (req, res, next) => {
@@ -40,10 +30,10 @@ cartRouter.post('/', ensureCartExist, async (req, res, next) => {
     if(productAlreadyInCart){
         const newQuantity = parseInt(productAlreadyInCart.quantity) + parseInt(quantity);
         await updateQuantity(newQuantity, productAlreadyInCart.id);
-        return res.status(200).redirect('/cart/showCart');
+        return res.status(200).send('product added');
     }
     const response = await addProductInCart(cart.id, productId, quantity);
-    return res.status(200).redirect('/cart/showCart');
+    return res.status(201).send('product added');
 });
 
 
@@ -54,7 +44,7 @@ cartRouter.delete('/delete/:productId', ensureCartExist, async (req, res, next) 
     const productAlreadyInCart = await checkProductInCart(cart.id, productId);
     if(productAlreadyInCart){
         await deleteProduct(cart.id, productId);
-        return res.redirect('/cart/showCart');
+        return res.status(200).send('product deleted');
     }
     return res.redirect('/cart/showCart?error=no-product-to-delete');
 });

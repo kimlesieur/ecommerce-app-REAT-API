@@ -3,14 +3,24 @@ const express = require('express');
 const app = express();
 const session = require("express-session");
 const passport = require("passport");
-//const morgan = require('morgan');
-const {PORT, SESS_NAME, SESS_SECRET, SALT_ROUNDS} = require('./config');
+const morgan = require('morgan');
+const {PORT, SESS_NAME, SESS_SECRET, SALT_ROUNDS, JWT_SECRET, SESSION_EXPIRY} = require('./config');
+//Routers 
 const productsRouter = require('./routes/products');
-const accountRouter = require('./routes/account');
+const categoriesRouter = require('./routes/categories');
+const userRouter = require('./routes/user');
 const cartRouter = require('./routes/cart');
 const orderRouter = require('./routes/order');
-const {getUser, createUser, checkUserMail} = require('./models/usersModel');
+//Authentication
+const {createUser, checkUserMail} = require('./models/usersModel');
 const bcrypt = require('bcrypt');
+const jwt = require("jsonwebtoken");
+const cors = require('cors');
+//Swagger Documentation
+const swaggerUi = require('swagger-ui-express');
+const yaml = require('js-yaml');
+const fs = require('fs');
+const path = require('path');
 
 /* 
 //Test to pass a date variable through the sub-Routers
@@ -21,8 +31,7 @@ const timeMiddleware = (req, res, next) => {
 app.use(timeMiddleware);
 */
 
-//app.use(morgan(':method :url :status :res[content-length]kB - :response-time ms'));
-
+app.use(morgan(':method :url :status :res[content-length]kB - :response-time ms'));
 
 app.use(bodyParser.urlencoded({
   extended: true
@@ -38,62 +47,21 @@ app.use(
   })
 );
 
+//Instruction so Express can accept incoming requests with JSON payloads
+app.use(express.json()) 
+//Headers to allow requests from React frontend
+app.use(function (req, res, next) {
+  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4002');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  next();
+});
+app.use(cors());
+
 require('./config/passport');
+require('./config/passport-jwt');
 app.use(passport.initialize());
 app.use(passport.session());
-
-
-app.get('/', (req, res, next) => {
-  return res.send(
-    `<h1>Welcome to this REST API hosted on Heroku !<h1>
-    <a href='/login'>Login</a>
-    <a href='/register'>Register</a>
-    <a href='/'>Home</a>
-    <form method='post' action='/logout'>
-      <button>Logout</button>
-    </form>`
-  )
-});
-
-app.get('/login', (req, res, next) => {
-  if(req.query.unauthorized){
-    return res.send(`
-    <h1>Login</h1>
-    <h2>You can't access this page, please login or register !</h2>
-    <form method='post' action='/login'>
-      <input name='email' placeholder='Email' require/>
-      <input type='password' name='password' placeholder='Password' require/> 
-      <input type='submit' />
-    </form>
-    <a href='/register'>Register</a>
-  `
-  )
-  }
-  return res.send(`
-    <h1>Login</h1>
-    <form method='post' action='/login'>
-      <input name='email' placeholder='Email' require/>
-      <input type='password' name='password' placeholder='Password' require/> 
-      <input type='submit' />
-    </form>
-    <a href='/register'>Register</a>
-  `
-  )
-});
-
-app.get('/register', (req, res, next) => {
- res.send(`
- <h1>Register</h1>
- <form method='post' action='/register'>
-    <input name='firstname' placeholder='First Name' require/>
-    <input name='lastname' placeholder='First Name' require/>
-    <input name='email' placeholder='Email' require/>
-    <input type='password' name='password' placeholder='Password' require/> 
-    <input type='submit' />
- </form>
- <a href='/register'>Login</a>
- `)
-});
 
 /*
 app.post('/login', async (req, res, next) => {
@@ -110,10 +78,27 @@ app.post('/login', async (req, res, next) => {
 });
 */
 
+//Login and Register routes
+
+const getToken = userId => {
+  return jwt.sign(userId, JWT_SECRET, {
+    expiresIn: eval(SESSION_EXPIRY),
+  })
+};
+
 app.post('/login', 
-  passport.authenticate('local', {failureRedirect: "/login?error=wrong-password"}),
+  passport.authenticate('local'),
   (req, res) => {
-    res.redirect("/");
+    const token = getToken({ id: req.user.id });
+    if(token){
+      res.send({
+        success: true, 
+        token 
+      })
+    } else {
+      console.log("Erreur serveur lors de l'authentification")
+      res.send("Erreur serveur lors de l'authentification")
+    }
   }
 );
 
@@ -128,33 +113,39 @@ const passwordHash = async (password, saltRounds) => {
   return null;
 };
 
-//TODO = When user register, retrieve the user id and add to session for automatic login
 app.post('/register', async (req, res, next) => {
   const {firstname, lastname, email, password} = req.body;
   if(firstname && lastname && email && password){
     const isEmailTaken = await checkUserMail(email);
     if(isEmailTaken){
-      return res.redirect('/register?error=mail-already-taken')
+      return res.send('Error : email already taken')
     }
     const passwordHashed = await passwordHash(password, parseInt(SALT_ROUNDS));
-    await createUser(firstname, lastname, email, passwordHashed)
-    return res.redirect('/')
+    await createUser(firstname, lastname, email, passwordHashed);
+    return res.send(201);
   }
-  return res.redirect('/register?error=missing-infos')
+  return res.status(401).send('Error : wrong info');
 });
 
 app.post('/logout', (req, res) => {
   req.logout();
-  res.redirect('/');
+  res.send(200);
 });
 
+const verifyToken = passport.authenticate("jwt", { session: false });
+
+/*
 const ensureAuthentication = (req, res, next) => {
+  console.log("tentative d'authentification");
+  const test = req.user ? "user défini" : "user non défini";
+  console.log(test);
   if (req.user) {
     return next();
   } else {
     return res.redirect('/login?unauthorized');
   }
 }
+*/
 
 /*
 app.post('/logout', (req, res, next) => {
@@ -168,10 +159,16 @@ app.post('/logout', (req, res, next) => {
 });
 */
 
+//Swagger Doc
+const swaggerDoc = yaml.load(fs.readFileSync(path.resolve(__dirname, './swagger.yaml'), 'utf-8'));
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
+
+//Routes
 app.use('/products', productsRouter);
-app.use('/account', ensureAuthentication, accountRouter);
-app.use('/cart', ensureAuthentication, cartRouter);
-app.use('/orders', ensureAuthentication, orderRouter);
+app.use('/categories', categoriesRouter);
+app.use('/user', verifyToken, userRouter);
+app.use('/cart', verifyToken, cartRouter);
+app.use('/orders', verifyToken, orderRouter);
 
 
 

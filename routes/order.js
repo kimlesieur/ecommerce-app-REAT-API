@@ -22,10 +22,10 @@ const ensureCartNotEmpty = async (req, res, next) => {
     const cart = await getCart(user.id);
     const products = await getProductsFromCart(cart.id);
     if(products.length === 0){
-        return res.send("Add products in your cart before trying to checkout !");
+        console.log("Cart is empty !");
+        return res.status(401).send("Add products in your cart before trying to checkout !");
     }
     return next();
-
 };
 
 orderRouter.get('/:orderId?', async (req, res, next) => {
@@ -63,8 +63,9 @@ orderRouter.post('/', ensureCartExist, ensureCartNotEmpty, async (req, res, next
     */
     const reduceSubtotals = async (array) => {
         const total = array.reduce((curr, prev) => curr + prev, 0);
-        await updateTotal(total, order.id)
+        await updateTotal(total, order.id);
     };
+
     const subtotals = [];
     Promise.all( products.map(async (product, index) => {
         const productPrice = await getProductPrice(product.product_id);
@@ -75,16 +76,16 @@ orderRouter.post('/', ensureCartExist, ensureCartNotEmpty, async (req, res, next
     })
     ).then(() => reduceSubtotals(subtotals));
 
-
     //Delete the actual cart (and by sql cascade delete all cart_items linked)
     await deleteCart(user.id);
-    return res.redirect('/');
+    return res.status(201).send((order.id).toString());
 });
 
 orderRouter.post('/:orderId/checkout', async (req, res, next) => {
     const orderId = parseInt(req.params.orderId);
     await checkoutOrder(orderId);
-    return res.redirect('/orders/:orderId');
+    console.log(`Order ${orderId} has been paid`);
+    return res.status(201).redirect('/orders/:orderId');
 });
 
 

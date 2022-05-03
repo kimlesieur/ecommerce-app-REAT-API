@@ -7,6 +7,14 @@ const getCart = (userId) => {
         .catch(err => console.error('Error while executing a getCart query', err.stack))
 };
 
+const getCartItems = (cartId) => {
+    return pool
+        .query(`SELECT * FROM cart_items WHERE cart_id = $1`, [cartId])
+        .then(res => res.rows)
+        .catch(err => console.error('Error while executing a getCartItems query', err.stack))
+};
+
+
 const deleteCart = (userId) => {
     return pool
             .query(`DELETE FROM carts WHERE user_id = $1 `, [userId])
@@ -23,4 +31,4 @@ const createCart = (userId) => {
 
 
 
-module.exports = {getCart, createCart, deleteCart};
+module.exports = {getCart, createCart, deleteCart, getCartItems};

@@ -9,5 +9,8 @@
           DB_PORT: process.env.PGPORT
         },
         SESS_NAME: process.env.SESS_NAME,
-        SESS_SECRET : process.env.SESS_SECRET
+        SESS_SECRET: process.env.SESS_SECRET,
+        JWT_SECRET: process.env.JWT_SECRET,
+        SESSION_EXPIRY: process.env.SESSION_EXPIRY,
+        
       }
