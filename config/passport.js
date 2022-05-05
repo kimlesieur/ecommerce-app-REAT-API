@@ -1,7 +1,12 @@
 const passport = require("passport");
+const createError = require('http-errors');
 const LocalStrategy = require("passport-local").Strategy;
-const {checkUserMail, getUserById} = require('../models/usersModel');
+const GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
+const {GOOGLE, SALT_ROUNDS} = require('../config');
+const {checkUserMail, getUserById, createUser, checkOauthId, getInfoFromGoogle} = require('../models/usersModel');
 const bcrypt = require('bcrypt');
+const {passwordHash} = require('../utils/utils');
+
 
 const getUserByMail = async (email, cb) => {
     const user = await checkUserMail(email);
@@ -41,6 +46,37 @@ passport.use(new LocalStrategy(
         });
     }
 ));
+
+/*
+Google OAuth2 Strategy
+*/
+
+//TODO Password creation : add a random creation string utils before calling passwordHash()
+
+passport.use(new GoogleStrategy({
+    clientID: GOOGLE.CLIENT_ID,
+    clientSecret: GOOGLE.CLIENT_SECRET,
+    callbackURL: GOOGLE.CALLBACK_URL
+  },
+  async (accessToken, refreshToken, profile, done) => {
+    try {
+      const checkUser = await checkOauthId(profile.id);
+      if(checkUser){
+        console.log(`User ${checkUser.firstname} has already an account !`);
+        return done(null, checkUser);
+      }
+      const user = await getInfoFromGoogle(accessToken);
+      const passwordHashed = await passwordHash("test", parseInt(SALT_ROUNDS));
+      const newUser = await createUser(user.given_name, user.family_name, user.email, passwordHashed, user.sub);
+      return done(null, newUser);
+    } catch(err) {
+      return done(err);
+    }
+  }
+));
+
+
+
 
 
 

@@ -228,7 +228,8 @@ CREATE TABLE public.users (
     lastname character varying(255) NOT NULL,
     email character varying(255) NOT NULL,
     password character varying(255) NOT NULL,
-    created date NOT NULL
+    created date NOT NULL,
+    oauth_id integer
 );
 
 

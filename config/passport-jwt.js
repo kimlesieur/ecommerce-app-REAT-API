@@ -16,13 +16,8 @@ opts.secretOrKey = JWT_SECRET;
 
 passport.use(new JwtStrategy(opts, function (jwt_payload, cb){
     getUser(jwt_payload.id, function (err, user) {
-        if (err) {
-          return cb(err, false)
-        }
-        if (user) {
-          return cb(null, user)
-        } else {
-          return cb(null, false)
-        }
+        if (err) return cb(err, false);
+        if (user) return cb(null, user);
+        return cb(null, false);
       })
 }));

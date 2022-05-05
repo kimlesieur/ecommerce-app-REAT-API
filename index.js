@@ -5,12 +5,14 @@ const session = require("express-session");
 const passport = require("passport");
 //const morgan = require('morgan');
 const {PORT, SESS_NAME, SESS_SECRET, SALT_ROUNDS, JWT_SECRET, SESSION_EXPIRY} = require('./config');
+const {passwordHash, getToken} = require('./utils/utils');
 //Routers 
 const productsRouter = require('./routes/products');
 const categoriesRouter = require('./routes/categories');
 const userRouter = require('./routes/user');
 const cartRouter = require('./routes/cart');
 const orderRouter = require('./routes/order');
+const authRouter = require('./routes/auth');
 //Authentication
 const {createUser, checkUserMail} = require('./models/usersModel');
 const bcrypt = require('bcrypt');
@@ -21,6 +23,7 @@ const swaggerUi = require('swagger-ui-express');
 const yaml = require('js-yaml');
 const fs = require('fs');
 const path = require('path');
+
 
 /* 
 //Test to pass a date variable through the sub-Routers
@@ -89,11 +92,7 @@ app.get('/', (req, res, next) => {
 
 //Login and Register routes
 
-const getToken = userId => {
-  return jwt.sign(userId, JWT_SECRET, {
-    expiresIn: eval(SESSION_EXPIRY),
-  })
-};
+
 
 app.post('/login', 
   passport.authenticate('local'),
@@ -110,17 +109,6 @@ app.post('/login',
     }
   }
 );
-
-const passwordHash = async (password, saltRounds) => {
-  try {
-    const salt = await bcrypt.genSalt(saltRounds);
-    const hash = await bcrypt.hash(password, salt);
-    return hash;
-  } catch (err) {
-    console.log(err);
-  }
-  return null;
-};
 
 app.post('/register', async (req, res, next) => {
   const {firstname, lastname, email, password} = req.body;
@@ -175,6 +163,7 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc));
 //Routes
 app.use('/products', productsRouter);
 app.use('/categories', categoriesRouter);
+app.use('/auth', authRouter )
 app.use('/user', verifyToken, userRouter);
 app.use('/cart', verifyToken, cartRouter);
 app.use('/orders', verifyToken, orderRouter);
