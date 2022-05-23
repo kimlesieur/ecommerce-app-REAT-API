@@ -8,7 +8,7 @@ paths:
     summary: Login user
     description: Used to login a user.
     post:
-      summary: Login user.
+      summary: login user
       description: Login user with credentials email and password.
       operationId: login_user
       requestBody:
@@ -44,7 +44,7 @@ paths:
     summary: Register user
     description: Used to Register a user.
     post:
-      summary: Register user.
+      summary: register user
       description: Register user with basic account informations.
       operationId: register_user
       requestBody:
@@ -78,8 +78,8 @@ paths:
     summary: Logout user
     description: Used to logout a user.
     post:
-      summary: Logout user.
-      description: Logout user.
+      summary: logout user
+      description: logout user
       operationId: logout_user
       responses:
         '200':
@@ -94,11 +94,18 @@ paths:
   
   /products :
     summary: Get all products data
-    description: Path used to retrieve user data from database table users
+    description: Path used to retrieve products list from database table products
     get:
-      summary: gets the user data
-      description: Retrieve the user information from database
+      summary: get list of all products
+      description:  get list of all products or products by category using query parameters.
       operationId: get_products
+      parameters:
+        - name: category
+          in: query
+          description: The id of the category.
+          schema:
+            type: string
+          example: 3
       responses:
         '200':
           content:
@@ -115,10 +122,10 @@ paths:
         
   /products/{id} :
     summary: Get one product data
-    description: Path used to retrieve product data from database table products
+    description: Path used to retrieve details from a specific product
     get:
-      summary: gets the user data
-      description: Retrieve the user information from database
+      summary: get product data
+      description: Retrieve a specific product details
       operationId: get_product
       parameters:
         - name: id
@@ -143,10 +150,10 @@ paths:
         
   /categories :
     summary: Get all categories data
-    description: Path used to retrieve categories data from database table categories
+    description: Path used to retrieve categories list data from database table categories
     get:
-      summary: gets the categories data
-      description: Retrieve categories information from database
+      summary: get categories list data
+      description: Retrieve all categories information from database
       operationId: get_categories
       responses:
         '200':
@@ -168,7 +175,7 @@ paths:
     get:
       security:
       - bearerAuth: []
-      summary: gets the user data
+      summary: get the user data
       description: Retrieve the user information from database
       operationId: get_user
       responses:
@@ -232,7 +239,8 @@ paths:
           description: Default error sample response
       tags:
         - Cart
-  /cart/delete/{id}:
+
+  /cart/{id}:
     summary: Get all of user's cart data
     description: Path used to retrieve cart data from database table cart_items
     delete:
@@ -244,7 +252,7 @@ paths:
       parameters:
         - name: id
           in: path
-          description: The id of the product.
+          description: The id of the product to delete from the cart.
           required: true
           schema:
             type: string
@@ -262,11 +270,13 @@ paths:
         - Cart
         
   /orders:
-    summary: Get all of orders data
-    description: Path used to retrieve all orders data from orders.json
+    summary: Get all orders list
+    description: Path used to retrieve all orders data
     get:
-      summary: gets the order data
-      description: Retrieve the order information from orders.json
+      security:
+      - bearerAuth: []
+      summary: get the orders list
+      description: Get all the authenticated user's orders.
       operationId: get_orders
       responses:
         '200':
@@ -285,50 +295,71 @@ paths:
           description: Default error sample response
       tags:
         - Orders
-
-  /neworder:
-    summary: Add a new order
-    description: This path is used to add a new order to the orders.json file
     post:
-      summary: Add a new order
-      description: Add a new order to the orders.json file
-      operationId: add_order
-      requestBody:
-        description: A new order object
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Order'
-        required: true
+      security:
+      - bearerAuth: []
+      summary: create a new order
+      description: Post a new order. The order is based on the current cart of the authenticated user so you don't need to add a body to this request.
+      operationId: post_order
       responses:
         '200':
           content:
-            text/plain; charset=utf-8:
+            application/json:
               examples:
-                Message:
-                  value: Success
+                add item to cart:
+                  value: >-
+                    {"name":"Carey
+                    Maynard","id":"001","state":"pending"}
           description: Success
-        '400':
-          content:
-            text/plain; charset=utf-8:
-              examples:
-                Error:
-                  value: Invalid Argument
-          description: Invalid Argument Provided
+        default:
+          description: Default error sample response
       tags:
-        - New Order
+        - Orders
+  
+  /orders/{orderId}:
+    summary: Get a specific order details
+    description: Path used to get one specific order details
+    get:
+      security:
+      - bearerAuth: []
+      summary: get a specific order details
+      description: Retrieve a specific order details
+      operationId: get_order
+      parameters:
+        - name: orderId
+          in: path
+          description: The id of the order.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              examples:
+                orders:
+                  value: >-
+                    {"name":"Carey
+                    Maynard","id":"001","state":"pending"}
+          description: Success
+        default:
+          description: Default error sample response
+      tags:
+        - Orders
         
-  /update/{id}:
-    summary: Update a specific order by his id
+  /orders/{orderId}/checkout:
+    summary: Checkout a specific order by his id
     description: >-
       This path is used to change the status of an order matching the provided
-      id. It modifies the state attribute of each order.
-    put:
-      summary: Update an order
-      description: Update the state of an order with a matching id in the orders.json file
-      operationId: update_order
+      id. It modifies the state attribute of the order.
+    post:
+      security:
+      - bearerAuth: []
+      summary: checkout an order
+      description: This path is used to change the status of an order matching the provided id. It modifies the state attribute of the order. Update the state of an order with a matching id. No payment module involved for now so the only change is the order status.
+      operationId: checkout_order
       parameters:
-        - name: id
+        - name: orderId
           in: path
           description: The id of the order.
           required: true
@@ -338,7 +369,7 @@ paths:
         default:
           description: Default error sample response
       tags:
-        - Update Order
+        - Orders
         
 components:
   schemas:
@@ -348,7 +379,7 @@ components:
         name:
           type: string
         id:
-          type: string
+          type: integer
         state:
           type: string
       xml:
@@ -379,9 +410,9 @@ components:
       type: object
       properties:
         productId:
-          type: string
+          type: integer
         quantity:
-          type: string
+          type: integer
       xml:
         name: product
   securitySchemes:

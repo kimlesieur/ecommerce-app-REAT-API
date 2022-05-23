@@ -115,7 +115,7 @@ app.post('/register', async (req, res, next) => {
   if(firstname && lastname && email && password){
     const isEmailTaken = await checkUserMail(email);
     if(isEmailTaken){
-      return res.send('Error : email already taken')
+      return res.status(409).send('Error : email already taken');
     }
     const passwordHashed = await passwordHash(password, parseInt(SALT_ROUNDS));
     await createUser(firstname, lastname, email, passwordHashed);

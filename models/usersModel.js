@@ -40,6 +40,7 @@ const checkOauthId = async (oauthId) => {
 const getInfoFromGoogle = async (accessToken) => {
     const data = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${accessToken}`)
       .then(res => res.json());
+    console.log(data);
     return data;
   };
 
